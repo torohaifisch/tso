@@ -26,6 +26,38 @@ def shift(path):
 	return l
 #def mirror:
 
+def two_opt(route):
+	best = route
+	improved = True
+	while improved:
+		improved = False
+		for i in range(1, len(route)-2):
+			for j in range(i+1, len(route)):
+				if j-i == 1: continue # changes nothing, skip then
+				new_route = route[:]
+				new_route[i:j] = route[j-1:i-1:-1] # this is the 2woptSwap
+				if (calculateDistance(new_route) < calculateDistance(best)):
+					best = new_route
+					improved = True
+		route = best
+	return best, calculateDistance(best)
+
+
+def initObs(path):
+	lista=[]
+	sol=[]
+	for j in path:
+		for i in range(len(inputMatrix)):
+			lista.append(len(inputMatrix)-1 - j[0][i])
+			
+		sol.append((lista,calculateDistance(lista)))
+
+	join = path+sol
+	join.sort(key=lambda tup: tup[1])
+	join = join[:]
+	return (join)
+
+
 def obs(path):
 	lista=[]
 	for i in range(len(inputMatrix)):
@@ -80,11 +112,9 @@ maxCities=len(inputMatrix)
 #population
 N=maxCities
 #iterations
-maxFes=500000
+maxFes=200000
 
 ST=0.5
-
-
 
 iPath = list(range(0,maxCities))
 trees=[]
@@ -93,7 +123,7 @@ distances=[]
 for i in range(N):
     random.shuffle(iPath)
     trees.append((iPath,calculateDistance(iPath)))
-
+trees = initObs(trees)
 fes = N
 tempTrees = trees.copy()
 tempTrees.sort(key=lambda tup: tup[1])
@@ -127,3 +157,4 @@ while fes <maxFes:
 	if tBest[1]<best[1]:
 		best = tBest
 print(best)	
+print(two_opt(best[0]))
