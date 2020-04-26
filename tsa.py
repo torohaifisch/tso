@@ -1,7 +1,9 @@
 import random
-from random import randint 
+from random import randint
+from concurrent.futures import ThreadPoolExecutor
 import math
 
+# Swap positions of 2 values
 def swap(path):
 	sequence = path.copy()
 	idx = range(len(sequence))
@@ -11,6 +13,7 @@ def swap(path):
 	sequence[j]=temp
 	return sequence
 
+# Left Shift
 def shift(path):
 	l = path.copy()
 	idx = range(len(l))
@@ -24,8 +27,8 @@ def shift(path):
 		c.append(c.pop(0))
 		l[y:x] = c
 	return l
-#def mirror:
 
+# 2-opt algorithm (local search)
 def two_opt(route):
 	best = route
 	improved = True
@@ -42,8 +45,8 @@ def two_opt(route):
 		route = best
 	return best, calculateDistance(best)
 
-
-def initObs(path):
+# Oposition of initial population
+def initObs(path,n):
 	lista=[]
 	sol=[]
 	for j in path:
@@ -51,32 +54,37 @@ def initObs(path):
 			lista.append(len(inputMatrix)-1 - j[0][i])
 			
 		sol.append((lista,calculateDistance(lista)))
+		lista=[]
 
 	join = path+sol
 	join.sort(key=lambda tup: tup[1])
-	join = join[:]
+	join = join[:n]
 	return (join)
 
-
+# Opossition of solution
 def obs(path):
 	lista=[]
 	for i in range(len(inputMatrix)):
 		lista.append(len(inputMatrix)-1 - path[i])
 	return lista
 
-def createSeeds(Tree):
+def createSeeds(tree):
 	seeds=[]
-	tempT=Tree.copy()
-	s = swap(tempT)
+	s = swap(tree)
 	seeds.append((s, calculateDistance(s)))
-	tempT=Tree.copy()
-	s = shift(tempT)
+	s = shift(tree)
 	seeds.append((s, calculateDistance(s)))
-	tempT=Tree.copy()
-	s = obs(tempT)
+	s = obs(tree)
 	seeds.append((s, calculateDistance(s)))
+
+	if storeData:
+		for i in seeds:
+			dataList.append(i)
+
 	return seeds
 
+
+# Distance in matrix
 def calculateDistance(path):
         index = path[0]
         distance = 0
@@ -84,9 +92,12 @@ def calculateDistance(path):
                 distance += distanceMatrix[index][nextIndex]
                 index = nextIndex
         return distance+distanceMatrix[path[-1]][path[0]]
+
+# euclidean distance
 def distance(city1: dict, city2: dict):
     return math.sqrt((city1['x'] - city2['x']) ** 2 + (city1['y'] - city2['y']) ** 2)
 
+#define cost matrix from instance of TSP
 def cMA():
         cities = []
         points = []
@@ -114,20 +125,31 @@ N=maxCities
 #iterations
 maxFes=200000
 
+# recommended 0.5
 ST=0.5
 
-iPath = list(range(0,maxCities))
+fes = N
+
 trees=[]
 distances=[]
+storeData = False
+dataList=[]
+
+# Init population
+
+iPath = list(range(0,maxCities))
 
 for i in range(N):
     random.shuffle(iPath)
     trees.append((iPath,calculateDistance(iPath)))
-trees = initObs(trees)
-fes = N
-tempTrees = trees.copy()
-tempTrees.sort(key=lambda tup: tup[1])
-best = tempTrees[0]
+
+# Get best initial solutions by exploring opposed space
+trees = initObs(trees,N)
+
+#Get initial best
+best = trees[0]
+
+# discrete tree seed mh
 while fes <maxFes:
 	count=0
 	for i in trees:
@@ -156,5 +178,18 @@ while fes <maxFes:
 	tBest = tempTrees[0]
 	if tBest[1]<best[1]:
 		best = tBest
-print(best)	
-print(two_opt(best[0]))
+print(best)
+# local search
+rbest = two_opt(best[0])
+print(rbest)
+
+
+# store data for svm training
+if storeData:
+		f= open("guru99.txt","w+")
+		for i in dataList:
+			f.write(str(rbest[1]/i[1]))
+			for j in i[0]: 
+				f.write(" "+str(j))
+			f.write("\n")
+		f.close()
