@@ -1,6 +1,6 @@
 import random
 from random import randint
-from concurrent.futures import ThreadPoolExecutor
+from joblib import dump, load
 import math
 
 # Swap positions of 2 values
@@ -126,7 +126,7 @@ N=maxCities
 maxFes=200000
 
 # recommended 0.5
-ST=0.5
+ST=0.75
 
 fes = N
 
@@ -148,7 +148,7 @@ trees = initObs(trees,N)
 
 #Get initial best
 best = trees[0]
-
+cfr=load("./svm/filename.joblib")
 # discrete tree seed mh
 while fes <maxFes:
 	count=0
@@ -159,7 +159,7 @@ while fes <maxFes:
 		kTree=trees[nTree]
 		ns = 6
 
-		if random.random()<ST:
+		if cfr.predict([i[0]])>ST:
 			seedT1 = createSeeds(best[0])
 			seedT2 = createSeeds(kTree[0])
 		else:
@@ -174,11 +174,11 @@ while fes <maxFes:
 			trees[count] = bestT
 		count+=1
 	tempTrees = trees.copy()
+	tempTrees = initObs(tempTrees,N)
 	tempTrees.sort(key=lambda tup: tup[1])
 	tBest = tempTrees[0]
 	if tBest[1]<best[1]:
 		best = tBest
-print(best)
 # local search
 rbest = two_opt(best[0])
 print(rbest)
@@ -186,7 +186,7 @@ print(rbest)
 
 # store data for svm training
 if storeData:
-		f= open("guru99.txt","w+")
+		f= open("data.txt","a")
 		for i in dataList:
 			f.write(str(rbest[1]/i[1]))
 			for j in i[0]: 
