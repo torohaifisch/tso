@@ -1,5 +1,5 @@
 # Discrete Tree Seed Algorithm
-Implementation of DTSA + OBL to solve TSP 
+Implementation of DTSA + OBL + SVM to solve TSP 
 
 # References
 
