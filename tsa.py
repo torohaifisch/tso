@@ -28,6 +28,19 @@ def shift(path):
 		l[y:x] = c
 	return l
 
+def symmetry(path):
+	n = len(path)
+	temp1 = path.copy()
+	temp2 = path.copy()
+	b  = math.ceil(1+(n-2)*random.random())
+	R2 = math.ceil(1+(b-2)*random.random())
+	R3 = math.ceil(1+(n-b-1)*random.random())
+	a  = min(R2,R3)
+	if b + 1 <=n and b + a <=n :
+		temp1[b+1:b+a] = temp2[b-1:b-a:-1]
+		temp1[b-1:b-a:-1] = temp2[b+1:b+a]
+	return temp1
+
 # 2-opt algorithm (local search)
 def two_opt(route):
 	best = route
@@ -45,36 +58,13 @@ def two_opt(route):
 		route = best
 	return best, calculateDistance(best)
 
-# Oposition of initial population
-def initObs(path,n):
-	lista=[]
-	sol=[]
-	for j in path:
-		for i in range(len(inputMatrix)):
-			lista.append(len(inputMatrix)-1 - j[0][i])
-			
-		sol.append((lista,calculateDistance(lista)))
-		lista=[]
-
-	join = path+sol
-	join.sort(key=lambda tup: tup[1])
-	join = join[:n]
-	return (join)
-
-# Opossition of solution
-def obs(path):
-	lista=[]
-	for i in range(len(inputMatrix)):
-		lista.append(len(inputMatrix)-1 - path[i])
-	return lista
-
 def createSeeds(tree):
 	seeds=[]
 	s = swap(tree)
 	seeds.append((s, calculateDistance(s)))
 	s = shift(tree)
 	seeds.append((s, calculateDistance(s)))
-	s = obs(tree)
+	s = symmetry(tree)
 	seeds.append((s, calculateDistance(s)))
 
 	if storeData:
@@ -126,7 +116,7 @@ N=maxCities
 maxFes=200000
 
 # recommended 0.5
-ST=0.75
+ST=0.5
 
 fes = N
 
@@ -144,11 +134,9 @@ for i in range(N):
     trees.append((iPath,calculateDistance(iPath)))
 
 # Get best initial solutions by exploring opposed space
-trees = initObs(trees,N)
-
+trees.sort(key=lambda tup: tup[1])
 #Get initial best
 best = trees[0]
-cfr=load("./svm/filename.joblib")
 # discrete tree seed mh
 while fes <maxFes:
 	count=0
@@ -159,7 +147,7 @@ while fes <maxFes:
 		kTree=trees[nTree]
 		ns = 6
 
-		if cfr.predict([i[0]])>ST:
+		if random.random()>ST:
 			seedT1 = createSeeds(best[0])
 			seedT2 = createSeeds(kTree[0])
 		else:
@@ -174,7 +162,6 @@ while fes <maxFes:
 			trees[count] = bestT
 		count+=1
 	tempTrees = trees.copy()
-	tempTrees = initObs(tempTrees,N)
 	tempTrees.sort(key=lambda tup: tup[1])
 	tBest = tempTrees[0]
 	if tBest[1]<best[1]:
@@ -183,13 +170,3 @@ while fes <maxFes:
 rbest = two_opt(best[0])
 print(rbest)
 
-
-# store data for svm training
-if storeData:
-		f= open("data.txt","a")
-		for i in dataList:
-			f.write(str(rbest[1]/i[1]))
-			for j in i[0]: 
-				f.write(" "+str(j))
-			f.write("\n")
-		f.close()
