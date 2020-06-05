@@ -28,6 +28,20 @@ def shift(path):
 		l[y:x] = c
 	return l
 
+def symmetry(path):
+	n = len(path)
+	temp1 = path.copy()
+	temp2 = path.copy()
+	b  = math.ceil(1+(n-2)*random.random())
+	R2 = math.ceil(1+(b-2)*random.random())
+	R3 = math.ceil(1+(n-b-1)*random.random())
+	a  = min(R2,R3)
+	if b + 1 <=n and b + a <=n :
+		temp1[b+1:b+a] = temp2[b-1:b-a:-1]
+		temp1[b-1:b-a:-1] = temp2[b+1:b+a]
+	return temp1
+
+
 # 2-opt algorithm (local search)
 def two_opt(route):
 	best = route
@@ -74,7 +88,7 @@ def createSeeds(tree):
 	seeds.append((s, calculateDistance(s)))
 	s = shift(tree)
 	seeds.append((s, calculateDistance(s)))
-	s = obs(tree)
+	s = symmetry(tree)
 	seeds.append((s, calculateDistance(s)))
 
 	if storeData:
@@ -126,7 +140,7 @@ N=maxCities
 maxFes=200000
 
 # recommended 0.5
-ST=0.75
+ST=0.7
 
 fes = N
 
@@ -174,7 +188,6 @@ while fes <maxFes:
 			trees[count] = bestT
 		count+=1
 	tempTrees = trees.copy()
-	tempTrees = initObs(tempTrees,N)
 	tempTrees.sort(key=lambda tup: tup[1])
 	tBest = tempTrees[0]
 	if tBest[1]<best[1]:
