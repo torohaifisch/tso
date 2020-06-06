@@ -148,7 +148,7 @@ fes = N
 
 trees=[]
 distances=[]
-storeData = False
+storeData = True
 dataList=[]
 
 # Init population
@@ -197,4 +197,14 @@ while fes <maxFes:
 # local search
 rbest = two_opt(best[0])
 print(rbest)
+
+# store data for svm training
+if storeData:
+		f= open("dataBerlin.txt","a")
+		for i in dataList:
+			f.write(str(rbest[1]/i[1]))
+			for j in i[0]: 
+				f.write(" "+str(j))
+			f.write("\n")
+		f.close()
 
