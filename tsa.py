@@ -1,4 +1,5 @@
 import random
+
 from random import randint
 from joblib import dump, load
 import math
@@ -57,6 +58,30 @@ def two_opt(route):
 					improved = True
 		route = best
 	return best, calculateDistance(best)
+# Nearest neighbor tour
+
+def nn_tsp(cities):
+    unvisited = set((c['index'],c['x'],c['y']) for c in cities)
+    for v in unvisited:
+        start = v
+        break
+    tour = [start]
+    unvisited.remove(start)
+    while unvisited:
+        C = nearest_neighbor(tour[-1], unvisited)
+        tour.append(C)
+        unvisited.remove(C)
+    cTour = [c[0]-1 for c in tour]
+    return (cTour,calculateDistance(cTour))
+
+def nearest_neighbor(A, cities):
+    return min(cities, key=lambda c: distanceT(c, A))
+
+def distanceT(city1: tuple, city2: tuple):
+    return math.sqrt((city1[1] - city2[2]) ** 2 + (city1[1] - city2[2]) ** 2)
+
+
+# Seeds
 
 def createSeeds(tree):
 	seeds=[]
@@ -87,15 +112,16 @@ def calculateDistance(path):
 def distance(city1: dict, city2: dict):
     return math.sqrt((city1['x'] - city2['x']) ** 2 + (city1['y'] - city2['y']) ** 2)
 
+
 #define cost matrix from instance of TSP
 def cMA():
         cities = []
         points = []
-        with open('./att48.txt') as f:
+        with open('./berlin52.txt') as f:
                 for line in f.readlines():
                         city = line.split(' ')
-                        cities.append(dict(index=int(city[0]), x=int(city[1]), y=int(city[2])))
-                        points.append((int(city[1]), int(city[2])))
+                        cities.append(dict(index=int(float(city[0])), x=int(float(city[1])), y=int(float(city[2]))))
+                        points.append((int(float(city[1])), int(float(city[2]))))
         cost_matrix = []
         rank = len(cities)
         for i in range(rank):
@@ -103,17 +129,17 @@ def cMA():
                 for j in range(rank):
                         row.append(distance(cities[i], cities[j]))
                 cost_matrix.append(row)
-        return cost_matrix
+        return cities,cost_matrix
 
 
-inputMatrix=cMA()
+arrCities,inputMatrix=cMA()
 distanceMatrix = inputMatrix
 maxCities=len(inputMatrix)
 
 #population
 N=maxCities
 #iterations
-maxFes=200000
+maxFes=24000
 
 # recommended 0.5
 ST=0.5
@@ -129,7 +155,8 @@ dataList=[]
 
 iPath = list(range(0,maxCities))
 
-for i in range(N):
+trees.append(nn_tsp(arrCities))
+for i in range(N-1):
     random.shuffle(iPath)
     trees.append((iPath,calculateDistance(iPath)))
 
@@ -137,6 +164,7 @@ for i in range(N):
 trees.sort(key=lambda tup: tup[1])
 #Get initial best
 best = trees[0]
+
 # discrete tree seed mh
 while fes <maxFes:
 	count=0
