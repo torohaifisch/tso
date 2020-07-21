@@ -28,7 +28,7 @@ def svm(filePath):
     tests = [13, 41, 25, 3, 34, 44, 23, 31, 38, 20, 46, 10, 22, 9, 12, 24, 47, 4, 1, 28, 33, 40, 15, 39, 14, 11, 32, 19, 29, 42, 16, 26, 18, 36, 5, 27, 35, 6, 17, 43, 45, 30, 37, 8, 7, 0, 21, 2]
 
     print("Accuracy:",model.score(X_test, y_test))
-    dump(model, 'filename.joblib') 
+    dump(model, 'berlinModel.joblib') 
 
     
-svm("../data.txt")
+svm("../dataBerlin.txt")
