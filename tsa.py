@@ -117,7 +117,7 @@ def distance(city1: dict, city2: dict):
 def cMA():
         cities = []
         points = []
-        with open('./berlin52.txt') as f:
+        with open('./instances/eil51.txt') as f:
                 for line in f.readlines():
                         city = line.split(' ')
                         cities.append(dict(index=int(float(city[0])), x=int(float(city[1])), y=int(float(city[2]))))
@@ -139,7 +139,7 @@ maxCities=len(inputMatrix)
 #population
 N=maxCities
 #iterations
-maxFes=24000
+maxFes=25500
 
 # recommended 0.5
 ST=0.5
@@ -197,14 +197,17 @@ while fes <maxFes:
 # local search
 rbest = two_opt(best[0])
 print(rbest)
-
 # store data for svm training
 if storeData:
-		f= open("dataBerlin.txt","a")
-		for i in dataList:
-			f.write(str(rbest[1]/i[1]))
-			for j in i[0]: 
-				f.write(" "+str(j))
-			f.write("\n")
-		f.close()
+        f=open("best.txt","a")
+        f.write(str(rbest[1]))
+        f.write("\n")
+        f.close()
+        f= open("eil51.txt","a")
+	for i in dataList:
+		f.write(str(rbest[1]/i[1]))
+		for j in i[0]: 
+			f.write(" "+str(j))
+		f.write("\n")
+	f.close()
 

@@ -31,4 +31,4 @@ def svm(filePath):
     dump(model, 'filename.joblib') 
 
     
-svm("../data.txt")
+svm("../eil51.txt")
