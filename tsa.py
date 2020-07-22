@@ -101,7 +101,7 @@ def distance(city1: dict, city2: dict):
 def cMA():
         cities = []
         points = []
-        with open('./berlin52.txt') as f:
+        with open('./instances/eil51.txt') as f:
                 for line in f.readlines():
                         city = line.split(' ')
                         cities.append(dict(index=int(city[0]), x=int(float(city[1])), y=int(float(city[2]))))
@@ -123,10 +123,10 @@ maxCities=len(inputMatrix)
 #population
 N=maxCities
 #iterations
-maxFes=24000
+maxFes=25500
 
 # recommended 0.5
-ST=0.75
+ST=0.5
 
 fes = N
 
@@ -148,7 +148,7 @@ trees = initObs(trees,N)
 
 #Get initial best
 best = trees[0]
-cfr=load("./svm/berlinModel.joblib")
+cfr=load("./svm/eil51Model.joblib")
 # discrete tree seed mh
 while fes <maxFes:
 	count=0
@@ -183,7 +183,10 @@ while fes <maxFes:
 rbest = two_opt(best[0])
 print(rbest)
 
-
+f=open("best.txt","a")
+f.write(str(rbest[1]))
+f.write("\n")
+f.close()
 # store data for svm training
 if storeData:
 		f= open("data.txt","a")
