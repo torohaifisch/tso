@@ -101,7 +101,7 @@ def distance(city1: dict, city2: dict):
 def cMA():
         cities = []
         points = []
-        with open('./instances/eil51.txt') as f:
+        with open('./instances/eil76.txt') as f:
                 for line in f.readlines():
                         city = line.split(' ')
                         cities.append(dict(index=int(city[0]), x=int(float(city[1])), y=int(float(city[2]))))
@@ -123,7 +123,7 @@ maxCities=len(inputMatrix)
 #population
 N=maxCities
 #iterations
-maxFes=25500
+maxFes=38000
 
 # recommended 0.5
 ST=0.5
@@ -148,7 +148,7 @@ trees = initObs(trees,N)
 
 #Get initial best
 best = trees[0]
-cfr=load("./svm/eil51Model.joblib")
+cfr=load("./svm/eil76Model.joblib")
 # discrete tree seed mh
 while fes <maxFes:
 	count=0
