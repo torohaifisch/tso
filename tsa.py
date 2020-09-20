@@ -28,6 +28,19 @@ def shift(path):
 		l[y:x] = c
 	return l
 
+def symmetry(path):
+	n = len(path)
+	temp1 = path.copy()
+	temp2 = path.copy()
+	b  = math.ceil(1+(n-2)*random.random())
+	R2 = math.ceil(1+(b-2)*random.random())
+	R3 = math.ceil(1+(n-b-1)*random.random())
+	a  = min(R2,R3)
+	if b + 1 <=n and b + a <=n :
+		temp1[b+1:b+a] = temp2[b-1:b-a:-1]
+		temp1[b-1:b-a:-1] = temp2[b+1:b+a]
+	return temp1
+
 # 2-opt algorithm (local search)
 def two_opt(route):
 	best = route
@@ -45,28 +58,27 @@ def two_opt(route):
 		route = best
 	return best, calculateDistance(best)
 
-# Oposition of initial population
-def initObs(path,n):
-	lista=[]
-	sol=[]
-	for j in path:
-		for i in range(len(inputMatrix)):
-			lista.append(len(inputMatrix)-1 - j[0][i])
-			
-		sol.append((lista,calculateDistance(lista)))
-		lista=[]
+# Nearest neighbor tour
 
-	join = path+sol
-	join.sort(key=lambda tup: tup[1])
-	join = join[:n]
-	return (join)
+def nn_tsp(cities):
+    unvisited = set((c['index'],c['x'],c['y']) for c in cities)
+    for v in unvisited:
+        start = v
+        break
+    tour = [start]
+    unvisited.remove(start)
+    while unvisited:
+        C = nearest_neighbor(tour[-1], unvisited)
+        tour.append(C)
+        unvisited.remove(C)
+    cTour = [c[0]-1 for c in tour]
+    return (cTour,calculateDistance(cTour))
 
-# Opossition of solution
-def obs(path):
-	lista=[]
-	for i in range(len(inputMatrix)):
-		lista.append(len(inputMatrix)-1 - path[i])
-	return lista
+def nearest_neighbor(A, cities):
+    return min(cities, key=lambda c: distanceT(c, A))
+
+def distanceT(city1: tuple, city2: tuple):
+    return math.sqrt((city1[1] - city2[2]) ** 2 + (city1[1] - city2[2]) ** 2)
 
 def createSeeds(tree):
 	seeds=[]
@@ -74,7 +86,7 @@ def createSeeds(tree):
 	seeds.append((s, calculateDistance(s)))
 	s = shift(tree)
 	seeds.append((s, calculateDistance(s)))
-	s = obs(tree)
+	s = symmetry(tree)
 	seeds.append((s, calculateDistance(s)))
 
 	if storeData:
@@ -101,10 +113,10 @@ def distance(city1: dict, city2: dict):
 def cMA():
         cities = []
         points = []
-        with open('./instances/eil76.txt') as f:
+        with open('./instances/eil51.txt') as f:
                 for line in f.readlines():
                         city = line.split(' ')
-                        cities.append(dict(index=int(city[0]), x=int(float(city[1])), y=int(float(city[2]))))
+                        cities.append(dict(index=int(float(city[0])), x=int(float(city[1])), y=int(float(city[2]))))
                         points.append((int(float(city[1])), int(float(city[2]))))
         cost_matrix = []
         rank = len(cities)
@@ -113,10 +125,10 @@ def cMA():
                 for j in range(rank):
                         row.append(distance(cities[i], cities[j]))
                 cost_matrix.append(row)
-        return cost_matrix
+        return cities,cost_matrix
 
 
-inputMatrix=cMA()
+arrCities,inputMatrix=cMA()
 distanceMatrix = inputMatrix
 maxCities=len(inputMatrix)
 
@@ -139,16 +151,16 @@ dataList=[]
 
 iPath = list(range(0,maxCities))
 
-for i in range(N):
+trees.append(nn_tsp(arrCities))
+for i in range(N-1):
     random.shuffle(iPath)
     trees.append((iPath,calculateDistance(iPath)))
 
 # Get best initial solutions by exploring opposed space
-trees = initObs(trees,N)
-
+trees.sort(key=lambda tup: tup[1])
 #Get initial best
 best = trees[0]
-cfr=load("./svm/eil76Model.joblib")
+cfr=load("./svm/eil51Model.joblib")
 # discrete tree seed mh
 while fes <maxFes:
 	count=0
@@ -174,7 +186,6 @@ while fes <maxFes:
 			trees[count] = bestT
 		count+=1
 	tempTrees = trees.copy()
-	tempTrees = initObs(tempTrees,N)
 	tempTrees.sort(key=lambda tup: tup[1])
 	tBest = tempTrees[0]
 	if tBest[1]<best[1]:
